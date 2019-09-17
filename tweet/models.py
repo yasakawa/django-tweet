@@ -135,7 +135,7 @@ class Tweet(models.Model):
     def __unicode__(self):
         return self.text
 
-def create_from_json(raw):
+def create_or_update_from_json(raw):
     """
     Given a *parsed* json status object, construct a new Tweet and User model.
     """
@@ -167,7 +167,7 @@ def create_from_json(raw):
         if user_counts[key] is not None and user_counts[key] < 0:
             user_counts[key] = None
 
-    tweet = Tweet(
+    tweet_defaults = dict(
         tweet_id = raw['id'],
 
         # Basic tweet info
@@ -196,7 +196,7 @@ def create_from_json(raw):
         entities = raw['entities'],
     )
 
-    user = User(
+    user_defaults = dict(
         user_id = raw_user['id'],
 
         # Basic user info
@@ -227,5 +227,25 @@ def create_from_json(raw):
         # Entities
         entities = raw_user['entities'],
     )
+
+    # get_or_update Tweet object
+    tweet, tweet_created = Tweet.objects.get_or_create(
+        tweet_id = raw['id'],
+        defaults = tweet_defaults,
+    )
+    if not tweet_created:
+        for k, v in tweet_defaults.items():
+            setattr(tweet, k, v)
+        tweet.save()
+
+    # get_or_update User object
+    user, user_created = User.objects.get_or_create(
+        user_id = raw_user['id'],
+        defaults = user_defaults,
+    )
+    if not user_created:
+        for k, v in user_defaults.items():
+            setattr(user, k, v)
+        user.save()
 
     return tweet, user

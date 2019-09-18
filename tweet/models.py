@@ -193,7 +193,7 @@ def create_or_update_from_json(raw):
         retweeted_status_id = retweeted_status['id'],
 
         # Entities
-        entities = raw['entities'],
+        entities = raw.get('entities'),
     )
 
     user_defaults = dict(
@@ -225,7 +225,7 @@ def create_or_update_from_json(raw):
         default_profile_image = raw_user.get('default_profile_image'),
     
         # Entities
-        entities = raw_user['entities'],
+        entities = raw_user.get('entities'),
     )
 
     # get_or_update Tweet object
